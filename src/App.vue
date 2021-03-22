@@ -2,12 +2,14 @@
   <div class="container">
     <img id="logo" alt="Timer Logo" src="./assets/clock.png" >
     <h1>Reaction Timer</h1>
-    <button class="button" v-if="mode === 'initial'" @click="startGame">Start</button>
-    <Block v-if="showBlock" @click="blockClicked" />
-    <div v-if="mode === 'results'">
-      <Results :time=reactionTime />
-      <button class="button">Restart</button>
-    </div>
+    <button class="button {}" :disabled="isPlaying" @click="startGame">Start</button>
+    <Block v-if="isPlaying" :delay="delay" @end="endGame"/>
+<!--    <p v-if="showResults">Reaction time: {{ score }}</p>-->
+    <Results v-if="showResults" :time="score" :message="getMessageFromScore(score)"/>
+<!--    <div v-if="mode === 'results'">-->
+<!--      <Results :time=reactionTime />-->
+<!--      <button class="button">Restart</button>-->
+<!--    </div>-->
   </div>
 </template>
 
@@ -25,27 +27,29 @@ export default {
   },
   data() {
     return {
-      mode: 'initial',
-      showBlock: false,
-      appearTime: 0,
-      reactionTime: 0
+      isPlaying: false,
+      delay: 0,
+      score: 0,
+      showResults: false,
+      message: ["Fast", "Medium", "Slow"]
     };
   },
   methods: {
     startGame() {
-      this.mode = 'play'
-      let interval = Math.random() * 3000
-
-      setTimeout(() => {
-        this.showBlock = true
-        this.appearTime = Date.now()
-      }, interval)
+      this.delay = 1000 + Math.random() * 2000
+      this.isPlaying = true
+      this.showResults = false
     },
-    blockClicked() {
-      this.reactionTime = Date.now() - this.appearTime
-      this.showBlock = false
-      this.mode = 'results'
-      console.log(this.reactionTime)
+    endGame(reactionTime) {
+      this.isPlaying = false
+      this.showResults = true
+      this.score = reactionTime
+    },
+    getMessageFromScore() {
+      let index = 1
+      if (this.score < 300) index = 0
+      if (this.score > 1000) index = 2
+      return this.message[index]
     }
   }
 }
@@ -67,7 +71,6 @@ html {
 
 .container h1 {
   font-size: 4rem;
-  margin-bottom: 1.5em;
 }
 
 
@@ -85,9 +88,9 @@ html {
 }
 
 .button {
-  padding: 2rem 5rem;
-  margin: 2em 0;
-  font-size: 2.5rem;
+  padding: 1rem 2.5rem;
+  margin: 1.5em 0;
+  font-size: 1.5rem;
   color: #ade8f4;
   background-color: #264653;
   border-radius: 8px;
@@ -99,5 +102,11 @@ html {
   color: #264653;
   background-color: #ade8f4;
   border: 0.2rem solid #264653;
+}
+
+.button:disabled {
+  color: #111111;
+  background-color: #666666;
+  border: 0.2rem solid #ffffff;
 }
 </style>
